@@ -1,0 +1,341 @@
+{
+  "name": "Job_Seeker",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "resume",
+        "limit": 1,
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "cd2074a8-5bdd-43b0-a41d-6749d90346bb",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VrbbkF5VAn5XUAyj",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 11
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "727a5af8-b78a-4b12-875a-f600c3a4ed10",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "4909d368-75f4-4688-b01b-dd6f0e6f1a35",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VrbbkF5VAn5XUAyj",
+          "name": "Google Drive account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api-inference.huggingface.co/models/facebook/bart-large-mnli",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputs\": \"Extract key information from this resume:\\n\\n{{ $json.data.toString() }}\\n\\nExtract: 1) Job titles the person is suitable for (top 3), 2) Top 5 skills, 3) Years of experience, 4) Location/Remote preference\",\n  \"parameters\": {\n    \"candidate_labels\": [\"Senior Developer\", \"Manager\", \"Designer\", \"Data Scientist\", \"DevOps Engineer\", \"Full Stack Developer\"],\n    \"multi_class\": true\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "2d920170-f1fa-443f-b346-45beeca1845a",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "FqXbQC7qCndrlCyb",
+          "name": "Hugging Face API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the Hugging Face response\nconst hfResponse = items[0].json;\n\n// Initialize extracted data object\nlet extractedData = {\n  job_titles: [\"Software Developer\", \"Software Engineer\", \"Full Stack Developer\"],\n  skills: [\"JavaScript\", \"Python\", \"React\", \"Node.js\", \"SQL\"],\n  experience_years: \"2\",\n  location: \"Remote\"\n};\n\ntry {\n  // Check if we have the expected response structure\n  if (Array.isArray(hfResponse) && hfResponse.length > 0) {\n    // If response is array, process first item\n    const result = hfResponse[0];\n    \n    if (result.scores && result.labels) {\n      // Extract job titles from high-confidence predictions\n      extractedData.job_titles = result.labels\n        .filter((label, index) => result.scores[index] > 0.5)\n        .slice(0, 3);\n      \n      if (extractedData.job_titles.length === 0) {\n        extractedData.job_titles = result.labels.slice(0, 3);\n      }\n    }\n  }\n  \n  // Try to extract skills from the original resume text\n  // This is a fallback approach\n  const resumeText = items[0].json.data?.toString() || \n                    items[0].json.toString() || \"\";\n  \n  // Common programming skills to search for\n  const commonSkills = [\n    \"JavaScript\", \"Python\", \"Java\", \"C++\", \"C#\", \"PHP\", \"Ruby\", \"Go\",\n    \"React\", \"Vue\", \"Angular\", \"Node.js\", \"Express\", \"Django\", \"Flask\",\n    \"SQL\", \"MongoDB\", \"PostgreSQL\", \"MySQL\", \"Firebase\",\n    \"HTML\", \"CSS\", \"Git\", \"Docker\", \"Kubernetes\", \"AWS\", \"Azure\", \"GCP\",\n    \"REST API\", \"GraphQL\", \"Linux\", \"Windows\", \"MacOS\"\n  ];\n  \n  const foundSkills = [];\n  commonSkills.forEach(skill => {\n    if (resumeText.toLowerCase().includes(skill.toLowerCase())) {\n      foundSkills.push(skill);\n    }\n  });\n  \n  if (foundSkills.length > 0) {\n    extractedData.skills = foundSkills.slice(0, 5);\n  }\n  \n  // Try to extract years of experience\n  const expMatch = resumeText.match(/(\\d+)\\s*(?:years?|yrs?)\\s*(?:of\\s*)?(?:experience|exp)/i);\n  if (expMatch) {\n    extractedData.experience_years = expMatch[1];\n  }\n  \n  // Try to extract location\n  const locations = [\"Remote\", \"New York\", \"San Francisco\", \"London\", \"Toronto\", \"Sydney\", \"India\", \"USA\", \"UK\"];\n  const foundLocation = locations.find(loc => \n    resumeText.toLowerCase().includes(loc.toLowerCase())\n  );\n  \n  if (foundLocation) {\n    extractedData.location = foundLocation;\n  }\n  \n} catch (error) {\n  console.error(\"Error parsing Hugging Face response:\", error);\n  // Return default values if parsing fails\n}\n\n// Return the formatted data\nreturn [{ json: extractedData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "175119f7-68af-4f42-abcd-e7d118e2fb43",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "14d2d2c21192a9a53fe363bd5db171bba63afd798d2902fb2a7bf5f48a0804dc"
+            },
+            {
+              "name": "engine",
+              "value": "google_jobs"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.job_titles }}"
+            },
+            {
+              "name": "chips",
+              "value": "date_posted:week"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "0bdeb302-c040-422f-81c0-a730181b241c",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Assumes the input contains something like: items[0].json.jobs_results (array)\n// Adjust the path if your jobs array is deeper (see notes below)\n\n// Inspect incoming items structure (for debugging in n8n UI console)\n// console.log(JSON.stringify(items, null, 2));\n\nconst input = items[0]?.json ?? {};\n// Try several common keys just in case the structure differs:\nconst candidates = [\n  input.jobs_results,\n  input.jobs,\n  input.jobs_results?.jobs_results, // sometimes nested\n  input.jobs_results?.results\n];\nlet jobsArray = undefined;\nfor (const c of candidates) {\n  if (Array.isArray(c)) { jobsArray = c; break; }\n}\n\n// If still undefined, try to find any array value in the input that looks like jobs\nif (!jobsArray) {\n  for (const key of Object.keys(input)) {\n    if (Array.isArray(input[key])) {\n      // naive heuristic: array of objects -> could be jobs\n      if (input[key].length === 0 || typeof input[key][0] === 'object') {\n        jobsArray = input[key];\n        break;\n      }\n    }\n  }\n}\n\n// Safe fallback\nif (!Array.isArray(jobsArray)) {\n  jobsArray = [];\n}\n\n// Build formattedJobs (example: extract title, company, location, url if present)\nconst formattedJobs = jobsArray.map(job => {\n  // adapt these keys to match your job object structure\n  const title = job.title || job.job_title || job.position || 'Untitled';\n  const company = job.company || job.employer || job.hiring_organization || 'Unknown';\n  const location = job.location || job.city || job.place || '';\n  const url = job.url || job.link || job.job_link || '';\n\n  return {\n    title,\n    company,\n    location,\n    url,\n    raw: job // keep full raw object for later debugging\n  };\n});\n\nconst result = {\n  hasJobs: formattedJobs.length > 0,\n  jobCount: formattedJobs.length,\n  formattedJobs: formattedJobs.length ? formattedJobs : \"No jobs found matching your profile. Try again tomorrow!\",\n  message: formattedJobs.length ? `${formattedJobs.length} jobs found` : \"No jobs found\"\n};\n\n// Return ONE item (Run Once for All Items). If you prefer one output per input item you must\n// build and return an array of items accordingly.\nreturn [{ json: result }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "a8ee6a28-76cb-4d58-b095-b8156f537905",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ab67904-ccd9-45b1-a4ab-65cea6ab52d8",
+              "leftValue": "={{ $json.hasJobs }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        0
+      ],
+      "id": "719ae998-172f-4d14-8284-86ecf751c4c8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "7047264869",
+        "text": "=companies found: {{ $json.message }}\ntitle:\ncompany:\nlocation:\nurl:",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1840,
+        -16
+      ],
+      "id": "1cea8f9f-8b5f-48ca-8d34-b1b7ae6a2a55",
+      "name": "Send a text message",
+      "webhookId": "893f7869-8bd5-4490-8d18-1443120969ac",
+      "notesInFlow": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "K0NCW142kbhmRxN0",
+          "name": "Telegram account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "297e08cb-6aec-40b8-a5cd-5c1855d33e10",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8f7ef68c1b9059f6e201e324484bdbcccb3610bc44c54fb430d0d41107f74151"
+  },
+  "id": "UUtf6RGfQiunFZ5h",
+  "tags": []
+}
