@@ -1,11 +1,11 @@
-# 🤖 AI-Powered Automated Job Search and Recommendation System  
+#  Agentic AI Workflow for Job Automation – n8n Integration
 
-### 🧩 Project Title:  
-**Agentic AI Workflow for Job Automation – n8n Integration**
+###  Project Title:  
+**Job Seeker**
 
 ---
 
-## 🧠 Overview  
+##  Overview  
 This project demonstrates how **Agentic AI** can autonomously perform end-to-end job searching and notification tasks without constant human intervention.  
 It uses **n8n** (an open-source automation platform) integrated with **Google Workspace** and **AI models** to fetch, process, and deliver curated job listings directly to the user.
 
@@ -18,7 +18,7 @@ The system acts as an **intelligent job assistant** that:
 
 ---
 
-## 🧩 Problem Statement  
+##  Problem Statement  
 Manually browsing through multiple job portals, filtering jobs by skill or location, and tracking updates is time-consuming and inefficient.  
 There is a need for an **automated, intelligent job search agent** that can:
 - Collect and clean job data,  
@@ -27,7 +27,7 @@ There is a need for an **automated, intelligent job search agent** that can:
 
 ---
 
-## 🚀 Project Workflow  
+##  Project Workflow  
 
 ### Step-by-Step Flow:
 1. **Trigger Setup** – The workflow starts on a scheduled basis using n8n.  
@@ -40,7 +40,7 @@ There is a need for an **automated, intelligent job search agent** that can:
 
 ---
 
-## 🤖 Agentic AI Concepts Used  
+##  Agentic AI Concepts Used  
 
 ### 1. **Autonomous Task Execution**  
 The AI acts as an **agent** that performs the entire workflow without human supervision once triggered.
@@ -63,7 +63,7 @@ The AI agent doesn’t act alone — it orchestrates multiple digital tools (She
 
 ---
 
-## 🧰 Tools and Resources Used  
+##  Tools and Resources Used  
 
 | Category | Tool / Resource | Purpose |
 |-----------|----------------|----------|
@@ -78,7 +78,7 @@ The AI agent doesn’t act alone — it orchestrates multiple digital tools (She
 
 ---
 
-## 🧩 How to Run the Project  
+##  How to Run the Project  
 
 1. **Set up n8n locally or on n8n Cloud.**  
 2. **Create a new workflow.**  
@@ -91,7 +91,7 @@ The AI agent doesn’t act alone — it orchestrates multiple digital tools (She
 
 ---
 
-## 📊 Expected Output  
+##  Expected Output  
 
 - **Google Sheets:** Contains clean, structured job listings.  
 - **Email Notification:** Summarized list of top job recommendations delivered to inbox.  
@@ -99,7 +99,7 @@ The AI agent doesn’t act alone — it orchestrates multiple digital tools (She
 
 ---
 
-## 💡 Future Enhancements  
+##  Future Enhancements  
 
 - Add **user authentication** to customize preferences.  
 - Integrate **LinkedIn API** officially.  
@@ -109,7 +109,7 @@ The AI agent doesn’t act alone — it orchestrates multiple digital tools (She
 
 ---
 
-## 🧑‍💻 Author  
+##  Author  
 **Pragna Budigem**  
 *VNR Vignana Jyothi Institute of Engineering and Technology*  
 Department of Computer Science and Business Systems  
