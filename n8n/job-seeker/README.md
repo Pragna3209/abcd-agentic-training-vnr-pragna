@@ -77,6 +77,8 @@ The AI agent doesn’t act alone — it orchestrates multiple digital tools (She
 | **Version Control** | GitHub | For maintaining project documentation and version tracking |
 
 ---
+## Workflow of the Project
+<img width="1024" height="1367" alt="ChatGPT Image Nov 1, 2025, 02_27_34 PM" src="https://github.com/user-attachments/assets/bfb0ec2c-c4c0-41c5-812f-f31b20098fc5" />
 
 ##  How to Run the Project  
 
