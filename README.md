@@ -90,8 +90,24 @@ The AI agent doesn’t act alone — it orchestrates multiple digital tools (She
 7. Monitor executions and email summaries.  
 
 ---
+<img width="1700" height="690" alt="Screenshot 2025-11-01 133228" src="https://github.com/user-attachments/assets/472c42e3-28bd-4ff5-9306-4e84767ca23f" />
+
+## Fetching resume from Drive
+<img width="1893" height="999" alt="image" src="https://github.com/user-attachments/assets/92ffe7a6-e65f-45c3-ada6-dfe809960fcb" />
+
+## Fetching the data of related jobs from Linkedin
+<img width="1910" height="985" alt="image" src="https://github.com/user-attachments/assets/72ac78c2-6876-4693-b3e7-a3eccdaaf35f" />
+## updating the job into sheets
+<img width="1856" height="902" alt="image" src="https://github.com/user-attachments/assets/9b8b7f6f-2035-41a9-86bd-7b6ec6ea341c" />
+
+## checking the score
+<img width="1856" height="900" alt="image" src="https://github.com/user-attachments/assets/3b191780-43ac-474c-8861-d28df122b6f6" />
+
+
+
 
 ##  Expected Output  
+<img width="1879" height="909" alt="image" src="https://github.com/user-attachments/assets/9b51d16b-5fc2-47b5-8d2a-5c1d76f6db3e" />
 
 - **Google Sheets:** Contains clean, structured job listings.  
 - **Email Notification:** Summarized list of top job recommendations delivered to inbox.  
